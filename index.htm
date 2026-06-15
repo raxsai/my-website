@@ -905,12 +905,50 @@ function renderRevs(){
 renderRevs();
 
 // ── CONTACT — GOOGLE SHEETS DATABASE (UNCHANGED) ──
-function sendContact(btn){
-  const n=document.getElementById('cName').value.trim(),e=document.getElementById('cEmail').value.trim(),s=document.getElementById('cSvc').value,b=document.getElementById('cBrief').value.trim();
-  if(!n||!e||!s||!b){gsap.to(btn,{x:-8,duration:.08,yoyo:true,repeat:5});return;}
-  document.getElementById('cSuc').classList.add('show');
-  btn.textContent='\u2713 Sent';btn.style.background='#1a5c2e';btn.style.cursor='default';
+// Replace your existing sendContact() function in index.html with this:
+
+async function sendContact(btn) {
+  const n = document.getElementById('cName').value.trim();
+  const e = document.getElementById('cEmail').value.trim();
+  const s = document.getElementById('cSvc').value;
+  const b = document.getElementById('cBrief').value.trim();
+
+  if (!n || !e || !s || !b) {
+    gsap.to(btn, { x: -8, duration: .08, yoyo: true, repeat: 5 });
+    return;
+  }
+
+  btn.textContent = 'Sending…';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: n, email: e, service: s, message: b })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('cSuc').classList.add('show');
+      btn.textContent = '✓ Sent';
+      btn.style.background = '#1a5c2e';
+      btn.style.cursor = 'default';
+      document.getElementById('cName').value = '';
+      document.getElementById('cEmail').value = '';
+      document.getElementById('cSvc').value = '';
+      document.getElementById('cBrief').value = '';
+    } else {
+      throw new Error(data.error);
+    }
+  } catch (err) {
+    btn.textContent = '✕ Failed — Try again';
+    btn.style.background = '#C41E3A';
+    btn.disabled = false;
+  }
 }
+
 </script>
 </body>
 </html>
